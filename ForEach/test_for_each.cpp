@@ -49,7 +49,7 @@ void FunctionAdd(int &n, int b)
 class FunctorAdd
 {
 public:
-	FunctorAdd(int b) : b_(b) {}
+	explicit FunctorAdd(int b) : b_(b) {}
 
 	void operator()(int &n)
 	{
@@ -67,14 +67,29 @@ int FunctionReturn(int n)
 	return n;
 }
 
-class FunctorReturn
+class FunctorReturnMean
 {
 public:
+	explicit FunctorReturnMean() : sum_(0), no_(0) {}
+
+	// Operator which runs repeatedly with the implicit argument.
 	void operator()(int n)
 	{
+		this->sum_ += n;
+		this->no_++;
 		std::cout << n << std::endl;
-		// TODO: How to take an argument and return a value?
 	}
+
+	// Return operator which runs only once at the end.
+	operator double()
+	{
+		std::cout << "Functor is returning a value. ";
+		return static_cast<double>(this->sum_) / static_cast<double>(this->no_);
+	}
+
+protected:
+	int sum_;
+	unsigned int no_;
 };
 
 int main(void)
@@ -84,33 +99,48 @@ int main(void)
 	//std::array<int, 5> i_1 = {1, 2, 3, 4, 5};
 	int n(0);
 
-	// Print elements.
+	// Do something without changing source data; print elements.
+	std::cout << "Printing elements" << std::endl;
 	// function.
 	std::for_each(i_1.begin(), i_1.end(), FunctionPrint);
-	//n = std::for_each(i_1.begin(), i_1.end(), FunctionReturn());
 	std::cout << std::endl;
 
 	// function object.
-	FunctorReturn functorRet;
-	std::for_each(i_1.begin(), i_1.end(), functorRet);
-	//n = std::for_each(i_1.begin(), i_1.end(), functorRet);
+	FunctorPrint functorPrint;
+	std::for_each(i_1.begin(), i_1.end(), functorPrint);
+	std::for_each(i_1.begin(), i_1.end(), FunctorPrint());
 	std::cout << std::endl;
 
-	// Change elements by increasing.
+	// Do something while changing source data; increase elements.
+	std::cout << "Increasing elements" << std::endl;
+
 	// function.
 	std::for_each(i_1.begin(), i_1.end(), FunctionIncrease);
 	std::cout << std::endl;
 
 	// function object.
-	FunctorIncrease functor2;
-	std::for_each(i_1.begin(), i_1.end(), functor2);
+	FunctorIncrease functorInc;
+	std::for_each(i_1.begin(), i_1.end(), functorInc);
+	std::for_each(i_1.begin(), i_1.end(), FunctorIncrease());
 	std::cout << std::endl;
 
-	// Change elements by adding the given parameter to it.
+	// Do something while taking input argument while changing source data; add a preset value to elements.
+	std::cout << "Adding a preset value to elements" << std::endl;
+
 	// function.
 	//std::for_each(i_1.begin(), i_1.end(), FunctionAdd(2));	// Compile error.
 
 	// function object.
-	FunctorAdd functor3(2);
-	std::for_each(i_1.begin(), i_1.end(), functor3);
+	FunctorAdd functorAdd(2);
+	std::for_each(i_1.begin(), i_1.end(), functorAdd);
+	std::for_each(i_1.begin(), i_1.end(), FunctorAdd(2));
+	std::cout << std::endl;
+
+	// Do something while returning a result at the end of the elements.
+	std::cout << "Returning a result at the end of the elements" << std::endl;
+
+	// function object.
+	FunctorReturnMean functorMean;
+	std::cout << std::for_each(i_1.begin(), i_1.end(), functorMean) << std::endl;
+	std::cout << std::for_each(i_1.begin(), i_1.end(), FunctorReturnMean()) << std::endl;
 }
